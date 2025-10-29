@@ -1,9 +1,14 @@
 <script setup lang="ts">
   import AlertError from '@/components/AlertError.vue'
   import { useTwoFactorAuth } from '@/composables/useTwoFactorAuth'
-  import { regenerateRecoveryCodes } from '@/routes/two-factor'
+  // import { regenerateRecoveryCodes } from '@/routes/two-factor'
   import { Form } from '@inertiajs/vue3'
   import { nextTick, onMounted, ref } from 'vue'
+
+  // Stub for removed two-factor routes
+  const regenerateRecoveryCodes = {
+    form: () => ({ action: '#', method: 'post' as const }),
+  }
 
   const { recoveryCodesList, fetchRecoveryCodes, errors } = useTwoFactorAuth()
   const isRecoveryCodesVisible = ref<boolean>(false)

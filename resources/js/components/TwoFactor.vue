@@ -1,6 +1,11 @@
 <script setup lang="ts">
-  import { disable } from '@/routes/two-factor'
+  // import { disable } from '@/routes/two-factor'
   import { Form } from '@inertiajs/vue3'
+
+  // Stub for removed two-factor routes
+  const disable = {
+    form: () => ({ action: '#', method: 'delete' as const }),
+  }
 
   withDefaults(
     defineProps<{

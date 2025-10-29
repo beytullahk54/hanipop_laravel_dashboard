@@ -1,8 +1,13 @@
 <script setup lang="ts">
   import AuthLayout from '@/layouts/AuthLayout.vue'
-  import { store } from '@/routes/two-factor/login'
+  // import { store } from '@/routes/two-factor/login'
   import { Form, Head } from '@inertiajs/vue3'
   import { computed, ref } from 'vue'
+
+  // Stub for removed two-factor routes
+  const store = {
+    form: () => ({ action: '#', method: 'post' as const }),
+  }
 
   const authConfigContent = computed<{
     title: string

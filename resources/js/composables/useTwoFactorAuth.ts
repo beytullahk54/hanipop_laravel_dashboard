@@ -1,4 +1,9 @@
-import { qrCode, recoveryCodes, secretKey } from '@/routes/two-factor'
+// import { qrCode, recoveryCodes, secretKey } from '@/routes/two-factor'
+
+// Stubs for removed two-factor routes
+const qrCode = { url: () => '#' }
+const recoveryCodes = { url: () => '#' }
+const secretKey = { url: () => '#' }
 
 async function fetchJson<T>(url: string): Promise<T> {
   const response = await fetch(url, {

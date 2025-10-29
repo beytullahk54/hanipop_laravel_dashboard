@@ -1,7 +1,15 @@
 <script setup lang="ts">
-  import { confirm, enable } from '@/routes/two-factor'
+  // import { confirm, enable } from '@/routes/two-factor'
   import { Form } from '@inertiajs/vue3'
   import { Loader2 } from 'lucide-vue-next'
+
+  // Stubs for removed two-factor routes
+  const confirm = {
+    form: () => ({ action: '#', method: 'post' as const }),
+  }
+  const enable = {
+    form: () => ({ action: '#', method: 'post' as const }),
+  }
 
   const props = defineProps<{
     requiresConfirmation: boolean
