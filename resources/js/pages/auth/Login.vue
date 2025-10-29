@@ -13,7 +13,7 @@
 </script>
 
 <template>
-  <AuthBase title="Hesabınıza giriş yapın" description="Giriş yapmak için e-posta adresinizi ve şifrenizi aşağıya girin">
+  <AuthBase title="Hesabınıza giriş yapın" description="Giriş yapmak için kullanıcı adınızı ve şifrenizi aşağıya girin">
     <Head title="Giriş Yap" />
 
     <div v-if="status" class="mb-4 text-center text-sm font-medium text-green-600">
@@ -28,7 +28,7 @@
     >
       <div class="grid gap-6">
         <UFormField name="text" :error="errors.email" label="Kullanıcı Adı">
-          <UInput type="text" class="w-full"  placeholder="username" autofocus />
+          <UInput type="text" class="w-full"  placeholder="Kullanıcı adı" autofocus />
         </UFormField>
 
         <UFormField name="password" :error="errors.password" label="Şifre">

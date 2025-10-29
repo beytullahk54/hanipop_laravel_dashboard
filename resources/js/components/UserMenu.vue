@@ -29,55 +29,30 @@
     ],
     [
       {
-        label: 'Profile',
+        label: 'Profilim',
         icon: 'i-lucide-user',
-      },
-      {
-        label: 'Billing',
-        icon: 'i-lucide-credit-card',
-      },
-      {
-        label: 'Settings',
-        icon: 'i-lucide-settings',
         to: '/settings/profile',
       },
-    ],
-    [
       {
-        label: 'Appearance',
-        icon: 'i-lucide-sun-moon',
-        children: [
-          {
-            label: 'Light',
-            icon: 'i-lucide-sun',
-            type: 'checkbox',
-            checked: colorMode.value === 'light',
-            onSelect(e: Event) {
-              e.preventDefault()
-
-              colorMode.value = 'light'
-            },
-          },
-          {
-            label: 'Dark',
-            icon: 'i-lucide-moon',
-            type: 'checkbox',
-            checked: colorMode.value === 'dark',
-            onUpdateChecked(checked: boolean) {
-              if (checked) {
-                colorMode.value = 'dark'
-              }
-            },
-            onSelect(e: Event) {
-              e.preventDefault()
-            },
-          },
-        ],
+        label: 'Firma',
+        icon: 'i-lucide-building',
+        to: '/menu',
       },
     ],
     [
       {
-        label: 'Log out',
+        label: 'Dark mod',
+        icon: colorMode.value === 'dark' ? 'i-lucide-moon' : 'i-lucide-sun',
+        type: 'checkbox',
+        checked: colorMode.value === 'dark',
+        onUpdateChecked(checked: boolean) {
+          colorMode.value = checked ? 'dark' : 'light'
+        },
+      },
+    ],
+    [
+      {
+        label: 'Çıkış yap',
         icon: 'i-lucide-log-out',
         onSelect: () => handleLogout(),
       },
