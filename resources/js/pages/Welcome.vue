@@ -1,22 +1,8 @@
 <script setup lang="ts">
-  import { login, register } from '@/routes'
+  import { dashboard, login, register } from '@/routes'
   import { Head, Link } from '@inertiajs/vue3'
-
-  interface Props {
-    stats?: {
-      urun_sayisi: number
-      kategori_sayisi: number
-      firma_adi: string | null
-    }
-  }
-
-  const props = withDefaults(defineProps<Props>(), {
-    stats: () => ({
-      urun_sayisi: 0,
-      kategori_sayisi: 0,
-      firma_adi: null,
-    }),
-  })
+  
+  const props = defineProps<{ productCount?: number, categoryCount?: number }>()
 </script>
 
 <template>
@@ -27,18 +13,25 @@
   <div class="flex min-h-screen flex-col items-center bg-[#FDFDFC] p-6 text-[#1b1b18] lg:justify-center lg:p-8 dark:bg-[#0a0a0a]">
     <header class="mb-6 w-full max-w-[335px] text-sm not-has-[nav]:hidden lg:max-w-4xl">
       <nav class="flex items-center justify-end gap-4">
-        <template v-if="!$page.props.auth.user">
+        <Link
+          v-if="$page.props.auth.user"
+          :href="dashboard()"
+          class="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
+        >
+          Dashboard
+        </Link>
+        <template v-else>
           <Link
             :href="login()"
             class="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#19140035] dark:text-[#EDEDEC] dark:hover:border-[#3E3E3A]"
           >
-            Giriş Yap
+            Log in
           </Link>
           <Link
             :href="register()"
             class="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
           >
-            Kayıt Ol
+            Register
           </Link>
         </template>
       </nav>
@@ -48,80 +41,81 @@
         <div
           class="flex-1 rounded-br-lg rounded-bl-lg bg-white p-6 pb-12 text-[13px] leading-[20px] shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] lg:rounded-tl-lg lg:rounded-br-none lg:p-20 dark:bg-[#161615] dark:text-[#EDEDEC] dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d]"
         >
-          <!-- Hoşgeldiniz mesajı -->
-          <div v-if="$page.props.auth.user" class="mb-6">
-            <h1 class="mb-2 text-2xl font-bold text-[#1b1b18] dark:text-[#EDEDEC]">
-              Hoşgeldiniz, {{ $page.props.auth.user.name }}! 👋
-            </h1>
-            <p class="mb-4 text-[#706f6c] dark:text-[#A1A09A]">
-              {{ props.stats.firma_adi ? `${props.stats.firma_adi} firması` : 'Firmanız' }} için QR menü yönetim paneline hoşgeldiniz.
-            </p>
-            
-            <!-- İstatistikler -->
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-6">
-              <div class="rounded-lg bg-gradient-to-r from-blue-50 to-blue-100 p-4 dark:from-blue-900/20 dark:to-blue-800/20">
-                <div class="flex items-center">
-                  <div class="flex-shrink-0">
-                    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-white">
-                      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                      </svg>
-                    </div>
-                  </div>
-                  <div class="ml-4">
-                    <p class="text-sm font-medium text-blue-600 dark:text-blue-400">Toplam Ürün</p>
-                    <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">{{ props.stats.urun_sayisi }}</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="rounded-lg bg-gradient-to-r from-green-50 to-green-100 p-4 dark:from-green-900/20 dark:to-green-800/20">
-                <div class="flex items-center">
-                  <div class="flex-shrink-0">
-                    <div class="flex h-8 w-8 items-center justify-center rounded-full bg-green-500 text-white">
-                      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
-                      </svg>
-                    </div>
-                  </div>
-                  <div class="ml-4">
-                    <p class="text-sm font-medium text-green-600 dark:text-green-400">Toplam Kategori</p>
-                    <p class="text-2xl font-bold text-green-900 dark:text-green-100">{{ props.stats.kategori_sayisi }}</p>
-                  </div>
-                </div>
-              </div>
+          <h1 class="mb-1 font-medium">Hoşgeldiniz</h1>
+          <p class="mb-2 text-[#706f6c] dark:text-[#A1A09A]">
+            Yeni QR dashboardımız ile sizlere daha iyi bir deneyim sunmaya çalışıyoruz. <br />Aşağıdaki özelliklerle başlayabilirsiniz.
+          </p>
+          <div v-if="$page.props.auth?.user" class="mb-4 grid grid-cols-2 gap-3 text-sm">
+            <div class="rounded-md border border-[#e3e3e0] p-3 dark:border-[#3E3E3A]">
+              <div class="text-[#706f6c] dark:text-[#A1A09A]">Ürün Sayınız</div>
+              <div class="mt-1 text-lg font-semibold">{{ props.productCount ?? 0 }}</div>
+            </div>
+            <div class="rounded-md border border-[#e3e3e0] p-3 dark:border-[#3E3E3A]">
+              <div class="text-[#706f6c] dark:text-[#A1A09A]">Kategori Sayınız</div>
+              <div class="mt-1 text-lg font-semibold">{{ props.categoryCount ?? 0 }}</div>
             </div>
           </div>
-          
-          <!-- Misafir kullanıcılar için -->
-          <div v-else>
-            <h1 class="mb-1 font-medium">Hoşgeldiniz</h1>
-            <p class="mb-2 text-[#706f6c] dark:text-[#A1A09A]">
-              QR menü yönetim sistemimize hoşgeldiniz. <br />Giriş yaparak menünüzü yönetmeye başlayabilirsiniz.
-            </p>
-          </div>
-          
-          <!-- Hızlı erişim butonları -->
-          <div v-if="$page.props.auth.user" class="flex flex-wrap gap-3">
-            <Link
-              href="/menu"
-              class="inline-flex items-center rounded-sm border border-[#19140035] bg-[#1b1b18] px-5 py-2 text-sm font-medium text-white hover:bg-black dark:border-[#3E3E3A] dark:bg-[#EDEDEC] dark:text-[#1C1C1A] dark:hover:bg-white"
+          <ul class="mb-4 flex flex-col lg:mb-6">
+            <li
+              class="relative flex items-center gap-4 py-2 before:absolute before:top-1/2 before:bottom-0 before:left-[0.4rem] before:border-l before:border-[#e3e3e0] dark:before:border-[#3E3E3A]"
             >
-              <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
-              </svg>
-              Menü Yönetimi
-            </Link>
-            <Link
-              href="/destek"
-              class="inline-flex items-center rounded-sm border border-[#19140035] px-5 py-2 text-sm font-medium text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
+              <span class="relative bg-white py-1 dark:bg-[#161615]">
+                <span
+                  class="flex h-3.5 w-3.5 items-center justify-center rounded-full border border-[#e3e3e0] bg-[#FDFDFC] shadow-[0px_0px_1px_0px_rgba(0,0,0,0.03),0px_1px_2px_0px_rgba(0,0,0,0.06)] dark:border-[#3E3E3A] dark:bg-[#161615]"
+                >
+                  <span class="h-1.5 w-1.5 rounded-full bg-[#dbdbd7] dark:bg-[#3E3E3A]" />
+                </span>
+              </span>
+              <span>
+                Read the
+                <a
+                  href="#"
+                  target="_blank"
+                  class="ml-1 inline-flex items-center space-x-1 font-medium text-[#f53003] underline underline-offset-4 dark:text-[#FF4433]"
+                >
+                  <span>Documentation</span>
+                  <svg width="{10}" height="{11}" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5">
+                    <path d="M7.70833 6.95834V2.79167H3.54167M2.5 8L7.5 3.00001" stroke="currentColor" stroke-linecap="square" />
+                  </svg>
+                </a>
+              </span>
+            </li>
+            <li
+              class="relative flex items-center gap-4 py-2 before:absolute before:top-0 before:bottom-1/2 before:left-[0.4rem] before:border-l before:border-[#e3e3e0] dark:before:border-[#3E3E3A]"
             >
-              <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25a9.75 9.75 0 100 19.5 9.75 9.75 0 000-19.5z"></path>
-              </svg>
-              Destek
-            </Link>
-          </div>
+              <span class="relative bg-white py-1 dark:bg-[#161615]">
+                <span
+                  class="flex h-3.5 w-3.5 items-center justify-center rounded-full border border-[#e3e3e0] bg-[#FDFDFC] shadow-[0px_0px_1px_0px_rgba(0,0,0,0.03),0px_1px_2px_0px_rgba(0,0,0,0.06)] dark:border-[#3E3E3A] dark:bg-[#161615]"
+                >
+                  <span class="h-1.5 w-1.5 rounded-full bg-[#dbdbd7] dark:bg-[#3E3E3A]" />
+                </span>
+              </span>
+              <span>
+                Watch video tutorials at
+                <a
+                  href="#"
+                  target="_blank"
+                  class="ml-1 inline-flex items-center space-x-1 font-medium text-[#f53003] underline underline-offset-4 dark:text-[#FF4433]"
+                >
+                  <span>Tutorials</span>
+                  <svg width="{10}" height="{11}" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5">
+                    <path d="M7.70833 6.95834V2.79167H3.54167M2.5 8L7.5 3.00001" stroke="currentColor" stroke-linecap="square" />
+                  </svg>
+                </a>
+              </span>
+            </li>
+          </ul>
+          <ul class="flex gap-3 text-sm leading-normal">
+            <li>
+              <a
+                href="#"
+                target="_blank"
+                class="inline-block rounded-sm border border-black bg-[#1b1b18] px-5 py-1.5 text-sm leading-normal text-white hover:border-black hover:bg-black dark:border-[#eeeeec] dark:bg-[#eeeeec] dark:text-[#1C1C1A] dark:hover:border-white dark:hover:bg-white"
+              >
+                Get Started
+              </a>
+            </li>
+          </ul>
         </div>
         <div
           class="relative -mb-px aspect-335/376 w-full shrink-0 overflow-hidden rounded-t-lg bg-[#fff2f2] lg:mb-0 lg:-ml-px lg:aspect-auto lg:w-[438px] lg:rounded-t-none lg:rounded-r-lg dark:bg-[#1D0002]"

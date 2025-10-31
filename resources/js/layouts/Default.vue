@@ -40,14 +40,7 @@
           open.value = false
         },
       },
-      {
-        label: 'İş Başvuruları',
-        icon: 'i-lucide-clipboard-list',
-        to: '/is-basvurulari',
-        onSelect: () => {
-          open.value = false
-        },
-      },
+      
       {
         label: 'Bizden Kareler',
         icon: 'i-lucide-grid-3x3',
@@ -56,14 +49,7 @@
           open.value = false
         },
       },
-      {
-        label: 'Şubeler',
-        icon: 'i-lucide-building',
-        to: '/subeler',
-        onSelect: () => {
-          open.value = false
-        },
-      },
+      
       {
         label: 'Referanslar',
         icon: 'i-lucide-star',
@@ -72,14 +58,7 @@
           open.value = false
         },
       },
-      {
-        label: 'Reklam Banner Yönetimi',
-        icon: 'i-lucide-image',
-        to: '/reklam-banner-yonetimi',
-        onSelect: () => {
-          open.value = false
-        },
-      },
+      
     ],
   ] satisfies NavigationMenuItem[][]
 

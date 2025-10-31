@@ -2,16 +2,34 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Urun;
+use App\Models\UrunKategori;
+use App\Models\Firma;
 
-Route::get('/', [App\Http\Controllers\WelcomeController::class, 'index'])->name('home');
-
-// Stats API route (auth middleware ile)
-Route::middleware(['auth'])->group(function (): void {
-    Route::get('api/stats/user', [App\Http\Controllers\StatsController::class, 'getUserStats'])->name('api.stats.user');
-});
+Route::get('/', fn () => Inertia::render('Welcome'))->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function (): void {
-    Route::get('dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
+    Route::get('dashboard', function () {
+        $user = Auth::user();
+        $firmaId = $user?->firma_id;
+
+        $productCount = 0;
+        $categoryCount = 0;
+
+        if ($firmaId) {
+            $firma = Firma::find($firmaId);
+            if ($firma) {
+                $productCount = $firma->uruns()->count();
+                $categoryCount = $firma->urunKategoris()->count();
+            }
+        }
+
+        return Inertia::render('Dashboard', [
+            'productCount' => $productCount,
+            'categoryCount' => $categoryCount,
+        ]);
+    })->name('dashboard');
     Route::get('menu', [App\Http\Controllers\MenuController::class, 'index'])->name('menu');
     Route::get('destek', fn () => Inertia::render('Destek'))->name('destek');
     Route::get('musteri-geri-bildirimleri', fn () => Inertia::render('MusteriGeriBildirimleri'))->name('musteri-geri-bildirimleri');
