@@ -9,4 +9,5 @@ Bunun benzeri bir sistem henüz düşünüyorum
 - Referanslar düşünülecek
 - Admin paket özellik ve atama, tarih atama özellikleri gelecek
 - Customer profil düzenleme özelliği (Firma vs.)
-- 
+- Kayıt ol özelliği geliştirelim. Menü oluşturma kısmını kontrol edelim.
+- Qr ürettirelim.
