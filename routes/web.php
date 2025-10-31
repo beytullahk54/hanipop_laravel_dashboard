@@ -31,8 +31,8 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         ]);
     })->name('dashboard');
     Route::get('menu', [App\Http\Controllers\MenuController::class, 'index'])->name('menu');
-    Route::get('destek', fn () => Inertia::render('Destek'))->name('destek');
-    Route::get('musteri-geri-bildirimleri', fn () => Inertia::render('MusteriGeriBildirimleri'))->name('musteri-geri-bildirimleri');
+    Route::get('destek', [App\Http\Controllers\Destek\Customer\DestekController::class, 'index'])->name('destek');
+    Route::get('musteri-geri-bildirimleri', [App\Http\Controllers\MusteriBildirimController::class, 'index'])->name('musteri-geri-bildirimleri');
     Route::get('is-basvurulari', fn () => Inertia::render('IsBasvurulari'))->name('is-basvurulari');
     Route::get('bizden-kareler', fn () => Inertia::render('BizdenKareler'))->name('bizden-kareler');
     Route::get('subeler', fn () => Inertia::render('Subeler'))->name('subeler');
@@ -55,6 +55,21 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         // Order routes
         Route::put('products/order', [App\Http\Controllers\MenuController::class, 'updateProductOrder']);
         Route::put('categories/order', [App\Http\Controllers\MenuController::class, 'updateCategoryOrder']);
+    });
+    
+    // Destek API routes
+    Route::prefix('api/destek')->group(function () {
+        Route::get('/', [App\Http\Controllers\Destek\Customer\DestekController::class, 'index']);
+        Route::post('/', [App\Http\Controllers\Destek\Customer\DestekController::class, 'store']);
+        Route::get('/{id}', [App\Http\Controllers\Destek\Customer\DestekController::class, 'show']);
+        Route::put('/{id}', [App\Http\Controllers\Destek\Customer\DestekController::class, 'update']);
+        Route::delete('/{id}', [App\Http\Controllers\Destek\Customer\DestekController::class, 'destroy']);
+    });
+    
+    // Musteri Bildirimleri API routes
+    Route::prefix('api/musteri-bildirimleri')->group(function () {
+        Route::get('/', [App\Http\Controllers\MusteriBildirimController::class, 'index']);
+        Route::get('/{id}', [App\Http\Controllers\MusteriBildirimController::class, 'show']);
     });
     
     // Eski sayfalar (gerekirse kaldırılabilir)
