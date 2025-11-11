@@ -8,6 +8,7 @@ use App\Models\UrunKategori;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class MenuController extends Controller
@@ -170,6 +171,7 @@ class MenuController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
+        $currentLanguage = session('admin_language', 'tr');
         
         $request->validate([
             'urun_adi' => 'required|string|max:255',
@@ -180,14 +182,21 @@ class MenuController extends Controller
             'urun_sira' => 'nullable|integer',
         ]);
 
+        // JSON formatında veri oluştur
+        $urunAdi = json_encode([$currentLanguage => $request->urun_adi]);
+        $urunAciklama = json_encode([$currentLanguage => $request->urun_aciklama]);
+
         $urun = Urun::create([
             'firma_id' => $user->firma_id,
             'kategori_id' => $request->kategori_id,
-            'urun_adi' => $request->urun_adi,
-            'urun_aciklama' => $request->urun_aciklama,
+            'urun_adi' => $urunAdi,
+            'urun_aciklama' => $urunAciklama,
             'urun_fiyati' => $request->urun_fiyati,
             'paket_urun_fiyati' => $request->paket_urun_fiyati,
             'urun_sira' => $request->urun_sira ?? 0,
+            'yeni_urun' => 0,
+            'urun_vitrin' => 0,
+            'sefin_tavsiyesi' => 0,
         ]);
 
         return response()->json([
@@ -362,6 +371,63 @@ class MenuController extends Controller
 
         return response()->json([
             'message' => 'Kategori sıralaması başarıyla güncellendi.'
+        ]);
+    }
+
+    /**
+     * Upload product image.
+     */
+    public function uploadImage(Request $request, $id)
+    {
+        $user = Auth::user();
+        
+        $request->validate([
+            'urun_gorsel' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ]);
+
+        $urun = Urun::where('id', $id)
+            ->where('firma_id', $user->firma_id)
+            ->firstOrFail();
+
+        // Eski görseli sil
+        if ($urun->urun_gorsel) {
+            // Eski görsel path'ini al (uploads/urun_gorsel/... formatında)
+            $oldImagePath = $urun->urun_gorsel;
+            // Eğer tam URL ise, sadece path kısmını al
+            if (strpos($oldImagePath, 'http') === 0) {
+                $parsedUrl = parse_url($oldImagePath);
+                $oldImagePath = ltrim($parsedUrl['path'] ?? '', '/');
+            }
+            $oldImagePath = ltrim($oldImagePath, '/');
+            if (file_exists(public_path($oldImagePath))) {
+                unlink(public_path($oldImagePath));
+            }
+        }
+
+        // Dosya adını formatla: YmdHis_original_filename
+        $originalName = $request->file('urun_gorsel')->getClientOriginalName();
+        $timestamp = now()->format('YmdHis');
+        $fileName = $timestamp . '_' . $originalName;
+        
+        // Klasör oluştur
+        $uploadDir = public_path('uploads/urun_gorsel');
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        
+        // Dosyayı yükle
+        $request->file('urun_gorsel')->move($uploadDir, $fileName);
+        
+        // URL'i oluştur
+        $imageUrl = 'uploads/urun_gorsel/' . $fileName;
+
+        $urun->update([
+            'urun_gorsel' => $imageUrl,
+        ]);
+
+        return response()->json([
+            'message' => 'Görsel başarıyla yüklendi.',
+            'urun' => $urun->fresh()
         ]);
     }
 }

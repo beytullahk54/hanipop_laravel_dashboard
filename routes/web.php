@@ -9,6 +9,9 @@ use App\Models\Firma;
 
 Route::get('/', fn () => Inertia::render('Welcome'))->name('home');
 
+// Register with menu (no auth required)
+Route::post('register-with-menu', [App\Http\Controllers\Auth\RegisterWithMenuController::class, 'store'])->middleware('guest');
+
 Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('dashboard', function () {
         $user = Auth::user();
@@ -46,6 +49,7 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
         Route::post('product', [App\Http\Controllers\MenuController::class, 'store']);
         Route::put('product/{id}', [App\Http\Controllers\MenuController::class, 'updateProduct']);
         Route::delete('product/{id}', [App\Http\Controllers\MenuController::class, 'destroy']);
+        Route::post('product/{id}/image', [App\Http\Controllers\MenuController::class, 'uploadImage']);
         
         // Category routes
         Route::post('category', [App\Http\Controllers\MenuController::class, 'storeCategory']);
@@ -70,6 +74,12 @@ Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::prefix('api/musteri-bildirimleri')->group(function () {
         Route::get('/', [App\Http\Controllers\MusteriBildirimController::class, 'index']);
         Route::get('/{id}', [App\Http\Controllers\MusteriBildirimController::class, 'show']);
+    });
+    
+    // QR Kod API routes
+    Route::prefix('api/qr')->group(function () {
+        Route::get('/generate', [App\Http\Controllers\QrController::class, 'generate']);
+        Route::get('/download', [App\Http\Controllers\QrController::class, 'download']);
     });
     
     // Eski sayfalar (gerekirse kaldırılabilir)

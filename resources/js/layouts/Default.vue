@@ -1,10 +1,12 @@
 <script setup lang="ts">
   import type { NavigationMenuItem } from '@nuxt/ui'
+  import QrCodeModal from '@/components/QrCodeModal.vue'
 
   const { url } = usePage()
   const toast = useToast()
 
   const open = ref(false)
+  const qrModalOpen = ref(false)
 
   const links = [
     [
@@ -25,6 +27,14 @@
         },
       },
       {
+        label: 'QR Çıktı Al',
+        icon: 'i-lucide-qr-code',
+        onSelect: () => {
+          qrModalOpen.value = true
+          open.value = false
+        },
+      },
+      {
         label: 'Destek',
         icon: 'i-lucide-headphones',
         to: '/destek',
@@ -41,23 +51,23 @@
         },
       },
       
-      {
-        label: 'Bizden Kareler',
-        icon: 'i-lucide-grid-3x3',
-        to: '/bizden-kareler',
-        onSelect: () => {
-          open.value = false
-        },
-      },
+      // {
+      //   label: 'Bizden Kareler',
+      //   icon: 'i-lucide-grid-3x3',
+      //   to: '/bizden-kareler',
+      //   onSelect: () => {
+      //     open.value = false
+      //   },
+      // },
       
-      {
-        label: 'Referanslar',
-        icon: 'i-lucide-star',
-        to: '/referanslar',
-        onSelect: () => {
-          open.value = false
-        },
-      },
+      // {
+      //   label: 'Referanslar',
+      //   icon: 'i-lucide-star',
+      //   to: '/referanslar',
+      //   onSelect: () => {
+      //     open.value = false
+      //   },
+      // },
       
     ],
   ] satisfies NavigationMenuItem[][]
@@ -118,4 +128,6 @@
       </UDashboardGroup>
     </UApp>
   </Suspense>
+
+  <QrCodeModal v-model:open="qrModalOpen" />
 </template>

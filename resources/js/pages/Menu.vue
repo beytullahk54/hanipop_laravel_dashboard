@@ -24,8 +24,12 @@
   const products = ref(props.urunler)
   const selectedProduct = ref<any>(null)
   const isEditModalOpen = ref(false)
+  const isAddProductModalOpen = ref(false)
+  const isImageUploadModalOpen = ref(false)
   const isLoading = ref(false)
   const currentLanguage = ref(props.currentLanguage)
+  const imageFile = ref<File | null>(null)
+  const imagePreview = ref<string | null>(null)
   
   // Kategori yönetimi
   const isAddCategoryModalOpen = ref(false)
@@ -104,8 +108,14 @@
   const schema = z.object({
     urun_adi: z.string().min(2, 'Ürün adı en az 2 karakter olmalı'),
     urun_aciklama: z.string().min(1, 'Açıklama gerekli'),
-    urun_fiyati: z.string().optional(),
-    paket_urun_fiyati: z.string().optional(),
+    urun_fiyati: z.preprocess(
+      (val) => val === '' || val === null || val === undefined ? undefined : String(val),
+      z.string().optional()
+    ),
+    paket_urun_fiyati: z.preprocess(
+      (val) => val === '' || val === null || val === undefined ? undefined : String(val),
+      z.string().optional()
+    ),
   })
 
   type Schema = z.output<typeof schema>
@@ -227,6 +237,172 @@
     state.urun_aciklama = undefined
     state.urun_fiyati = undefined
     state.paket_urun_fiyati = undefined
+  }
+
+  // Ürün ekleme
+  function openAddProductModal() {
+    if (!selectedCategory.value) {
+      toast.add({
+        title: 'Uyarı',
+        description: 'Lütfen önce bir kategori seçin.',
+        color: 'warning'
+      })
+      return
+    }
+    resetForm()
+    isAddProductModalOpen.value = true
+  }
+
+  async function onSubmitAddProduct(event: FormSubmitEvent<Schema>) {
+    if (!selectedCategory.value) {
+      toast.add({
+        title: 'Hata',
+        description: 'Kategori seçilmedi.',
+        color: 'error'
+      })
+      return
+    }
+
+    try {
+      const csrfToken = getCsrfToken()
+      
+      const response = await fetch('/api/menu/product', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+          ...event.data,
+          kategori_id: selectedCategory.value.id
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        
+        toast.add({ 
+          title: 'Başarılı', 
+          description: data.message, 
+          color: 'success' 
+        })
+        
+        isAddProductModalOpen.value = false
+        resetForm()
+        
+        // Ürünleri yeniden yükle
+        if (selectedCategory.value) {
+          isLoading.value = true
+          try {
+            const refreshResponse = await fetch(`/api/menu/products-by-category?kategori_id=${selectedCategory.value.id}`, {
+              headers: {
+                'X-CSRF-TOKEN': getCsrfToken(),
+                'X-Requested-With': 'XMLHttpRequest'
+              }
+            })
+            const refreshData = await refreshResponse.json()
+            products.value = refreshData.urunler
+          } catch (error) {
+            console.error('Ürünler yeniden yüklenirken hata:', error)
+          } finally {
+            isLoading.value = false
+          }
+        }
+      } else {
+        throw new Error('Ürün eklenemedi')
+      }
+    } catch (error) {
+      toast.add({
+        title: 'Hata',
+        description: 'Ürün eklenirken bir hata oluştu.',
+        color: 'error'
+      })
+    }
+  }
+
+  // Görsel yükleme
+  function openImageUploadModal(product: any) {
+    selectedProduct.value = product
+    imageFile.value = null
+    imagePreview.value = product.urun_gorsel || null
+    isImageUploadModalOpen.value = true
+  }
+
+  function handleImageSelect(event: Event) {
+    const target = event.target as HTMLInputElement
+    if (target.files && target.files[0]) {
+      imageFile.value = target.files[0]
+      
+      // Preview oluştur
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        imagePreview.value = e.target?.result as string
+      }
+      reader.readAsDataURL(imageFile.value)
+    }
+  }
+
+  async function uploadImage() {
+    if (!selectedProduct.value || !imageFile.value) {
+      toast.add({
+        title: 'Uyarı',
+        description: 'Lütfen bir görsel seçin.',
+        color: 'warning'
+      })
+      return
+    }
+
+    try {
+      const formData = new FormData()
+      formData.append('urun_gorsel', imageFile.value)
+      
+      const csrfToken = getCsrfToken()
+      
+      const response = await fetch(`/api/menu/product/${selectedProduct.value.id}/image`, {
+        method: 'POST',
+        headers: {
+          'X-CSRF-TOKEN': csrfToken,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        
+        // Local state'i güncelle
+        const productIndex = products.value.findIndex(p => p.id === selectedProduct.value!.id)
+        if (productIndex !== -1) {
+          products.value[productIndex].urun_gorsel = data.urun.urun_gorsel
+        }
+
+        toast.add({ 
+          title: 'Başarılı', 
+          description: data.message, 
+          color: 'success' 
+        })
+        
+        isImageUploadModalOpen.value = false
+        imageFile.value = null
+        imagePreview.value = null
+      } else {
+        throw new Error('Görsel yüklenemedi')
+      }
+    } catch (error) {
+      toast.add({
+        title: 'Hata',
+        description: 'Görsel yüklenirken bir hata oluştu.',
+        color: 'error'
+      })
+    }
+  }
+
+  function closeImageUploadModal() {
+    isImageUploadModalOpen.value = false
+    imageFile.value = null
+    imagePreview.value = null
+    selectedProduct.value = null
   }
 
   // Fiyat formatı
@@ -547,7 +723,17 @@
         <div>
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-lg font-semibold">{{ parseJsonField(selectedCategory?.kategori_adi, currentLanguage) || 'Kategori' }} Ürünleri</h2>
-            <UBadge :label="products.length" variant="subtle" />
+            <div class="flex items-center gap-2">
+              <UBadge :label="products.length" variant="subtle" />
+              <UButton
+                v-if="selectedCategory"
+                label="Ürün Ekle"
+                icon="i-lucide-plus"
+                size="sm"
+                color="primary"
+                @click="openAddProductModal"
+              />
+            </div>
           </div>
 
           <div v-if="isLoading" class="text-center py-12">
@@ -588,14 +774,24 @@
                 </div>
               </div>
               
-              <!-- Düzenle Butonu -->
-              <UButton
-                icon="i-lucide-edit"
-                size="sm"
-                color="neutral"
-                variant="outline"
-                @click.stop="editProduct(urun)"
-              />
+              <!-- Butonlar -->
+              <div class="flex items-center gap-2">
+                <UButton
+                  icon="i-lucide-image"
+                  size="sm"
+                  color="neutral"
+                  variant="outline"
+                  @click.stop="openImageUploadModal(urun)"
+                  title="Görsel Ekle"
+                />
+                <UButton
+                  icon="i-lucide-edit"
+                  size="sm"
+                  color="neutral"
+                  variant="outline"
+                  @click.stop="editProduct(urun)"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -636,7 +832,7 @@
               v-model="state.urun_fiyati" 
               placeholder="₺0.00"
               size="lg"
-              icon="i-lucide-dollar-sign"
+              icon="i-lucide-coins"
               type="number"
               step="0.01"
             />
@@ -725,6 +921,134 @@
           />
         </div>
       </UForm>
+    </template>
+  </UModal>
+
+  <!-- Yeni Ürün Ekleme Modalı -->
+  <UModal v-model:open="isAddProductModalOpen" title="Yeni Ürün Ekle" description="Yeni ürün ekleyin">
+    <template #body>
+      <UForm :schema="schema" :state="state" class="space-y-6" @submit="onSubmitAddProduct">
+        <!-- Ürün Adı -->
+        <UFormField label="Ürün Adı" name="urun_adi" required>
+          <UInput 
+            v-model="state.urun_adi" 
+            placeholder="Ürün adını girin"
+            size="lg"
+            icon="i-lucide-package"
+          />
+        </UFormField>
+        
+        <!-- Açıklama -->
+        <UFormField label="Açıklama" name="urun_aciklama" required>
+          <UTextarea 
+            v-model="state.urun_aciklama" 
+            placeholder="Ürün açıklamasını girin"
+            :rows="4"
+            resize
+            size="lg"
+            icon="i-lucide-file-text"
+          />
+        </UFormField>
+
+        <!-- Fiyat Alanları -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <UFormField label="Fiyat" name="urun_fiyati">
+            <UInput 
+              v-model="state.urun_fiyati" 
+              placeholder="₺0.00"
+              size="lg"
+              icon="i-lucide-coins"
+              type="number"
+              step="0.01"
+            />
+          </UFormField>
+          
+          <UFormField label="Paket Fiyatı" name="paket_urun_fiyati">
+            <UInput 
+              v-model="state.paket_urun_fiyati" 
+              placeholder="₺0.00"
+              size="lg"
+              icon="i-lucide-shopping-cart"
+              type="number"
+              step="0.01"
+            />
+          </UFormField>
+        </div>
+
+        <!-- Butonlar -->
+        <div class="flex justify-end gap-3 pt-6 border-t">
+          <UButton 
+            label="İptal" 
+            color="neutral" 
+            variant="outline"
+            size="lg"
+            @click="isAddProductModalOpen = false" 
+          />
+          <UButton 
+            label="Ekle" 
+            color="primary" 
+            variant="solid"
+            size="lg"
+            type="submit"
+            icon="i-lucide-plus"
+          />
+        </div>
+      </UForm>
+    </template>
+  </UModal>
+
+  <!-- Görsel Yükleme Modalı -->
+  <UModal v-model:open="isImageUploadModalOpen" title="Ürün Görseli Ekle" description="Ürün görselini yükleyin">
+    <template #body>
+      <div class="space-y-6">
+        <!-- Mevcut Görsel -->
+        <div v-if="imagePreview && !imageFile" class="flex justify-center">
+          <img 
+            :src="imagePreview" 
+            alt="Mevcut görsel"
+            class="max-w-full h-48 object-cover rounded-lg border"
+          />
+        </div>
+
+        <!-- Yeni Görsel Preview -->
+        <div v-if="imageFile && imagePreview" class="flex justify-center">
+          <img 
+            :src="imagePreview" 
+            alt="Yeni görsel önizleme"
+            class="max-w-full h-48 object-cover rounded-lg border"
+          />
+        </div>
+
+        <!-- Görsel Seç -->
+        <UFormField label="Görsel Seç" name="urun_gorsel">
+          <input
+            type="file"
+            accept="image/*"
+            @change="handleImageSelect"
+            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90"
+          />
+        </UFormField>
+
+        <!-- Butonlar -->
+        <div class="flex justify-end gap-3 pt-6 border-t">
+          <UButton 
+            label="İptal" 
+            color="neutral" 
+            variant="outline"
+            size="lg"
+            @click="closeImageUploadModal" 
+          />
+          <UButton 
+            label="Yükle" 
+            color="primary" 
+            variant="solid"
+            size="lg"
+            @click="uploadImage"
+            icon="i-lucide-upload"
+            :disabled="!imageFile"
+          />
+        </div>
+      </div>
     </template>
   </UModal>
 </template>

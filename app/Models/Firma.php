@@ -4,6 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\BizdenKareler;
+use App\Models\Subeler;
 
 class Firma extends Model
 {
@@ -15,6 +19,7 @@ class Firma extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'package_id',
         'menu_type',
         'firma_adi',
         'hizmetBitisTarihi',
@@ -90,5 +95,28 @@ class Firma extends Model
     public function uruns()
     {
         return $this->hasMany(Urun::class);
+    }
+
+    /**
+     * Get the package that owns the firma.
+     */
+    public function package()
+    {
+        return $this->belongsTo(Package::class);
+    }
+
+    public function sube() :HasMany
+    {
+        return $this->hasMany(Subeler::class, 'firma_id');
+    }
+
+    public function bizdenKareler() :HasMany
+    {
+        return $this->hasMany(BizdenKareler::class, 'firma_id');
+    }
+
+    public function menu() :HasOne
+    {
+        return $this->hasOne(Menu::class, 'firma_id');
     }
 }
