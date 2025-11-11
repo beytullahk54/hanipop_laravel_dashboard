@@ -1,0 +1,36 @@
+{
+  "name": "hanipop",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.10.5",
+    "@emotion/styled": "^11.10.5",
+    "@fontsource/montserrat-alternates": "^4.5.11",
+    "@fontsource/nova-mono": "^4.5.10",
+    "@fontsource/roboto": "^4.5.8",
+    "@mui/icons-material": "^5.11.0",
+    "@mui/material": "^5.11.2",
+    "@mui/styled-engine-sc": "^5.11.0",
+
+    "axios": "^1.2.2",
+    "next": "^14.2.0",
+    "prop-types": "^15.8.1",
+    "react": "18.2.0",
+    "react-axios": "^2.0.6",
+    "react-dom": "18.2.0",
+    "react-lazy-load-image-component": "^1.5.6",
+    "react-loadingg": "^1.7.2",
+    "react-scroll": "^1.8.9",
+    "react-toastify": "^9.1.1",
+    "styled-components": "^5.3.6"
+  }
+}
